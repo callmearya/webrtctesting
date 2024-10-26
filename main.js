@@ -17,6 +17,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const firestore = firebase.firestore();
+const database = firebase.database(); // Initialize Realtime Database
 
 const servers = {
   iceServers: [
@@ -33,17 +34,15 @@ let localStream = null;
 let remoteStream = null;
 
 // HTML elements
-const webcamButton = document.getElementById('webcamButton');
-const webcamVideo = document.getElementById('webcamVideo');
 const callButton = document.getElementById('callButton');
 const callInput = document.getElementById('callInput');
 const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
-// 1. Setup media sources
-
-webcamButton.onclick = async () => {
+// 1. Setup media sources and create an offer
+callButton.onclick = async () => {
+  // Start the webcam
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   remoteStream = new MediaStream();
 
@@ -59,22 +58,21 @@ webcamButton.onclick = async () => {
     });
   };
 
+  // Set local video
+  const webcamVideo = document.getElementById('webcamVideo');
   webcamVideo.srcObject = localStream;
-  remoteVideo.srcObject = remoteStream;
 
-  callButton.disabled = false;
-  answerButton.disabled = false;
-  webcamButton.disabled = true;
-};
-
-// 2. Create an offer
-callButton.onclick = async () => {
   // Reference Firestore collections for signaling
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
   const answerCandidates = callDoc.collection('answerCandidates');
 
   callInput.value = callDoc.id;
+
+  // Save the room code to Realtime Database
+  await database.ref('rooms/' + callDoc.id).set({
+    roomId: callDoc.id
+  });
 
   // Get candidates for caller, save to db
   pc.onicecandidate = (event) => {
@@ -111,7 +109,9 @@ callButton.onclick = async () => {
     });
   });
 
+  // Enable the hangup button
   hangupButton.disabled = false;
+  answerButton.disabled = false; // Enable Answer button if needed
 };
 
 // 3. Answer the call with the unique ID
