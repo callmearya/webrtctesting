@@ -17,7 +17,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const firestore = firebase.firestore();
-const database = firebase.database(); // Initialize Realtime Database
+const database = firebase.database();
 
 const servers = {
   iceServers: [
