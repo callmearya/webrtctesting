@@ -54,6 +54,26 @@ async function startWebcam() {
   }
 }
 
+// Function to get query parameters from the URL
+function getQueryParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        roomId: params.get('roomId'),
+    };
+}
+
+// Call this function to populate the input field and enable the answer button
+function initializeFromQuery() {
+    const { roomId } = getQueryParams();
+    if (roomId) {
+        callInput.value = roomId; // Set the room ID in the input field
+        answerButton.disabled = false; // Enable the answer button
+    }
+}
+
+// Call this function on page load
+initializeFromQuery();
+
 // Call Button - Create a Call Offer
 callButton.onclick = async () => {
   try {
@@ -117,7 +137,7 @@ callButton.onclick = async () => {
 
     // Disable the call button to prevent multiple calls
     callButton.disabled = true;
-    answerButton.disabled = true;
+    answerButton.disabled = true; // Keep answer button disabled until a room is filled
     hangupButton.disabled = false; // Enable hangup button
 
   } catch (error) {
@@ -153,50 +173,3 @@ answerButton.onclick = async () => {
   await callDoc.update({ answer });
 
   // Update participant count in Realtime Database
-  await database.ref('rooms/' + callId).transaction((currentData) => {
-    return {
-      ...currentData,
-      participants: (currentData.participants || 0) + 1 // Increment participant count
-    };
-  });
-
-  // Listen for incoming ICE candidates from offerCandidates
-  offerCandidates.onSnapshot((snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === 'added') {
-        let data = change.doc.data();
-        pc.addIceCandidate(new RTCIceCandidate(data));
-      }
-    });
-  });
-};
-
-// Hangup Button - Cleanup when the user leaves
-hangupButton.onclick = async () => {
-  const callId = callInput.value;
-  if (callId) {
-    await database.ref('rooms/' + callId).remove(); // Remove room from Realtime Database
-  }
-  // Clean up local streams and peer connection
-  localStream.getTracks().forEach(track => track.stop());
-  pc.close();
-};
-
-// Call this function on page load
-startWebcam();
-
-// Cleanup when the user leaves
-window.onbeforeunload = async () => {
-  const callId = callInput.value;
-  if (callId) {
-    // Decrement participant count
-    await database.ref('rooms/' + callId).transaction((currentData) => {
-      if (currentData) {
-        return {
-          ...currentData,
-          participants: currentData.participants > 0 ? currentData.participants - 1 : 0
-        };
-      }
-    });
-  }
-};
