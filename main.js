@@ -1,8 +1,22 @@
+import './style.css';
+
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
+  authDomain: "lil-testing.firebaseapp.com",
+  databaseURL: "https://lil-testing-default-rtdb.firebaseio.com",
+  projectId: "lil-testing",
+  storageBucket: "lil-testing.appspot.com",
+  messagingSenderId: "309006701748",
+  appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
+};
+
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const firestore = firebase.firestore();
-const database = firebase.database(); // Initialize Realtime Database
 
 const servers = {
   iceServers: [
@@ -27,15 +41,8 @@ const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
-// Helper function to disable buttons
-function disableButtons(exceptButtons) {
-  const buttons = [webcamButton, callButton, answerButton, hangupButton];
-  buttons.forEach((button) => {
-    button.disabled = !exceptButtons.includes(button);
-  });
-}
-
 // 1. Setup media sources
+
 webcamButton.onclick = async () => {
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   remoteStream = new MediaStream();
@@ -55,9 +62,9 @@ webcamButton.onclick = async () => {
   webcamVideo.srcObject = localStream;
   remoteVideo.srcObject = remoteStream;
 
-  // Enable call and answer buttons
   callButton.disabled = false;
   answerButton.disabled = false;
+  webcamButton.disabled = true;
 };
 
 // 2. Create an offer
@@ -66,11 +73,6 @@ callButton.onclick = async () => {
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
   const answerCandidates = callDoc.collection('answerCandidates');
-
-  // Store participant count in Realtime Database
-  await database.ref(`calls/${callDoc.id}`).set({
-    participants: 1, // Start with 1 participant (caller)
-  });
 
   callInput.value = callDoc.id;
 
@@ -89,14 +91,6 @@ callButton.onclick = async () => {
   };
 
   await callDoc.set({ offer });
-
-  // Update participant count in Realtime Database
-  await database.ref(`calls/${callDoc.id}`).update({
-    participants: 1, // Update count (for now, only the caller)
-  });
-
-  // Disable all buttons except hangup
-  disableButtons([hangupButton]);
 
   // Listen for remote answer
   callDoc.onSnapshot((snapshot) => {
@@ -132,6 +126,7 @@ answerButton.onclick = async () => {
   };
 
   const callData = (await callDoc.get()).data();
+
   const offerDescription = callData.offer;
   await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
 
@@ -145,17 +140,9 @@ answerButton.onclick = async () => {
 
   await callDoc.update({ answer });
 
-  // Update participant count when answered
-  const currentCountRef = database.ref(`calls/${callId}/participants`);
-  currentCountRef.transaction((currentCount) => {
-    return (currentCount || 0) + 1; // Increment the participant count
-  });
-
-  // Disable answer button and all others except hangup
-  disableButtons([hangupButton]);
-
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
+      console.log(change);
       if (change.type === 'added') {
         let data = change.doc.data();
         pc.addIceCandidate(new RTCIceCandidate(data));
