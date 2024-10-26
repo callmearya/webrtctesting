@@ -2,6 +2,7 @@ import './style.css';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
@@ -17,6 +18,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const firestore = firebase.firestore();
+const realtimeDatabase = firebase.database();
 
 const servers = {
   iceServers: [
@@ -42,7 +44,6 @@ const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
 // 1. Setup media sources
-
 webcamButton.onclick = async () => {
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   remoteStream = new MediaStream();
@@ -92,6 +93,13 @@ callButton.onclick = async () => {
 
   await callDoc.set({ offer });
 
+  // Store the call offer along with the participant count in Firebase Realtime Database
+  const callRef = realtimeDatabase.ref(`calls/${callDoc.id}`);
+  await callRef.set({
+    offer,
+    participantCount: 1,  // Initially setting participant count to 1
+  });
+
   // Listen for remote answer
   callDoc.onSnapshot((snapshot) => {
     const data = snapshot.data();
@@ -140,11 +148,16 @@ answerButton.onclick = async () => {
 
   await callDoc.update({ answer });
 
+  // Update participant count in Firebase Realtime Database
+  const callRef = realtimeDatabase.ref(`calls/${callId}`);
+  await callRef.update({
+    participantCount: 2,  // Updating participant count to 2 when answered
+  });
+
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
-      console.log(change);
       if (change.type === 'added') {
-        let data = change.doc.data();
+        const data = change.doc.data();
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
