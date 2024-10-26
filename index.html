@@ -1,30 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Call - WebRTC Demo</title>
-  </head>
-  <body>
-    <h2>Start Webcam and Create a Call</h2>
-    <div class="videos">
-      <span>
-        <h3>Local Stream</h3>
-        <video id="webcamVideo" autoplay playsinline></video>
-      </span>
-      <span>
-        <h3>Remote Stream</h3>
-        <video id="remoteVideo" autoplay playsinline></video>
-      </span>
-    </div>
-    <button id="callButton">Create Call (offer)</button>
-    <script type="module" src="/main.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        // Enable 'Create Call' functionality only
-        document.getElementById('callButton').style.display = 'block';
-      });
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join a Call - WebRTC</title>
+</head>
+<body>
+  <h2>Join a Call</h2>
+  <p>Answer the call from another browser window or device</p>
+  
+  <input id="callInput" placeholder="Room Code" />
+  <button id="answerButton">Join</button>
+
+  <h2>Remote Stream</h2>
+  <video id="remoteVideo" autoplay playsinline></video>
+
+  <h2>Hangup</h2>
+  <button id="hangupButton" disabled>Hangup</button>
+
+  <!-- Load the script after HTML content -->
+  <script type="module" src="main.js" defer></script>
+</body>
 </html>
