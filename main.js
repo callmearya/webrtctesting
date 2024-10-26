@@ -5,7 +5,13 @@ import 'firebase/firestore';
 import 'firebase/database';
 
 const firebaseConfig = {
-    // your config
+  apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
+  authDomain: "lil-testing.firebaseapp.com",
+  databaseURL: "https://lil-testing-default-rtdb.firebaseio.com",
+  projectId: "lil-testing",
+  storageBucket: "lil-testing.appspot.com",
+  messagingSenderId: "309006701748",
+  appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
 
 if (!firebase.apps.length) {
@@ -29,28 +35,28 @@ const pc = new RTCPeerConnection(servers);
 let localStream = null;
 
 // HTML elements
-const webcamButton = document.getElementById('webcamButton');
 const webcamVideo = document.getElementById('webcamVideo');
 const callButton = document.getElementById('callButton');
 
-// 1. Setup media sources
-
-webcamButton.onclick = async () => {
+// 1. Setup media sources and create call
+callButton.onclick = async () => {
+    // Start the webcam when the call button is clicked
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-
-    // Push tracks from local stream to peer connection
-    localStream.getTracks().forEach((track) => {
-        pc.addTrack(track, localStream);
-    });
-
     webcamVideo.srcObject = localStream;
 
-    callButton.disabled = false;
-    webcamButton.disabled = true; // Disable button after starting webcam
-};
+    const callsRef = database.ref('calls');
+    
+    // Check the current number of participants
+    const snapshot = await callsRef.once('value');
+    const activeCalls = snapshot.val() || {};
+    const participantCount = Object.keys(activeCalls).length;
 
-// 2. Create an offer
-callButton.onclick = async () => {
+    // Allow creating a call only if less than 2 participants
+    if (participantCount >= 2) {
+        alert('Maximum of 2 participants already in the call. Please try again later.');
+        return;
+    }
+
     // Reference Firestore collections for signaling
     const callDoc = firestore.collection('calls').doc();
     const offerCandidates = callDoc.collection('offerCandidates');
