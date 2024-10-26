@@ -1,19 +1,3 @@
-import './style.css';
-
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/database';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
-  authDomain: "lil-testing.firebaseapp.com",
-  databaseURL: "https://lil-testing-default-rtdb.firebaseio.com",
-  projectId: "lil-testing",
-  storageBucket: "lil-testing.appspot.com",
-  messagingSenderId: "309006701748",
-  appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
-};
-
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -110,9 +94,10 @@ callButton.onclick = async () => {
     });
   });
 
-  // Enable the hangup button
-  hangupButton.disabled = false;
-  answerButton.disabled = false; // Enable Answer button if needed
+  // Disable all buttons except the hangup button
+  callButton.disabled = true;
+  answerButton.disabled = true;
+  hangupButton.disabled = false; // Keep hangup enabled
 };
 
 // 3. Answer the call with the unique ID
