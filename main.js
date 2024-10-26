@@ -54,26 +54,6 @@ async function startWebcam() {
   }
 }
 
-// Function to get query parameters from the URL
-function getQueryParams() {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    roomId: params.get('roomId'),
-  };
-}
-
-// Call this function to populate the input field and enable the answer button
-function initializeFromQuery() {
-  const { roomId } = getQueryParams();
-  if (roomId) {
-    callInput.value = roomId; // Set the room ID in the input field
-    answerButton.disabled = false; // Enable the answer button
-  }
-}
-
-// Call this function on page load
-initializeFromQuery();
-
 // Call Button - Create a Call Offer
 callButton.onclick = async () => {
   try {
@@ -137,7 +117,7 @@ callButton.onclick = async () => {
 
     // Disable the call button to prevent multiple calls
     callButton.disabled = true;
-    answerButton.disabled = true; // Keep answer button disabled until a room is filled
+    answerButton.disabled = true;
     hangupButton.disabled = false; // Enable hangup button
 
   } catch (error) {
@@ -162,6 +142,11 @@ answerButton.onclick = async () => {
   const offerDescription = callData.offer;
   await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
 
+  // Listen for the remote stream
+  pc.ontrack = (event) => {
+    remoteVideo.srcObject = event.streams[0]; // Set the remote stream to the video element
+  };
+
   const answerDescription = await pc.createAnswer();
   await pc.setLocalDescription(answerDescription);
 
@@ -173,25 +158,48 @@ answerButton.onclick = async () => {
   await callDoc.update({ answer });
 
   // Update participant count in Realtime Database
-  await database.ref('rooms/' + callId).update({
-    participants: firebase.database.ServerValue.increment(1)
+  await database.ref('rooms/' + callId).transaction((currentData) => {
+    return {
+      ...currentData,
+      participants: (currentData.participants || 0) + 1 // Increment participant count
+    };
   });
 
-  // Enable the hangup button after answering the call
-  hangupButton.disabled = false;
+  offerCandidates.onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === 'added') {
+        let data = change.doc.data();
+        pc.addIceCandidate(new RTCIceCandidate(data));
+      }
+    });
 };
 
-// Hangup Button - Hangup the Call
+// Hangup Button - Cleanup when the user leaves
 hangupButton.onclick = async () => {
-  pc.close();
-  hangupButton.disabled = true;
-  callButton.disabled = false;
-  answerButton.disabled = true; // Keep answer button disabled after hangup
-  callInput.value = ''; // Clear the call input field
-
   const callId = callInput.value;
-  await database.ref('rooms/' + callId).remove(); // Remove room from Realtime Database
+  if (callId) {
+    await database.ref('rooms/' + callId).remove(); // Remove room from Realtime Database
+  }
+  // Clean up local streams and peer connection
+  localStream.getTracks().forEach(track => track.stop());
+  pc.close();
 };
 
-// Start the webcam on load
+// Call this function on page load
 startWebcam();
+
+// Cleanup when the user leaves
+window.onbeforeunload = async () => {
+  const callId = callInput.value;
+  if (callId) {
+    // Decrement participant count
+    await database.ref('rooms/' + callId).transaction((currentData) => {
+      if (currentData) {
+        return {
+          ...currentData,
+          participants: currentData.participants > 0 ? currentData.participants - 1 : 0
+        };
+      }
+    });
+  }
+};
