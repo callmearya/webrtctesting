@@ -4,24 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebRTC Demo - Create Call</title>
+    <title>WebRTC Demo</title>
 </head>
 <body>
-    <h2>Start Your Webcam</h2>
-    <div class="videos">
-        <span>
-            <h3>Local Stream</h3>
-            <video id="webcamVideo" autoplay playsinline></video>
-        </span>
-        <span>
-            <h3>Remote Stream</h3>
-            <video id="remoteVideo" autoplay playsinline></video>
-        </span>
-    </div>
+    <h2>Local Stream</h2>
+    <video id="webcamVideo" autoplay playsinline></video>
 
-    <button id="webcamButton">Start Webcam</button>
-    <h2>Create a New Call</h2>
-    <button id="callButton" disabled>Create Call (offer)</button>
+    <h2>Create a new Call</h2>
+    <button id="callButton">Create Call (offer)</button>
 
     <script type="module" src="/main.js"></script>
 </body>
