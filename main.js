@@ -1,8 +1,8 @@
 import './style.css';
-
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 
+// Firebase configuration
 const firebaseConfig = {
   // your config
 };
@@ -34,9 +34,25 @@ const callInput = document.getElementById('callInput');
 const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
+const participantCountDisplay = document.getElementById('participantCount'); // New element for displaying participant count
+
+// Initialize participant count
+let participantCount = 0;
+
+// Function to toggle button states
+function toggleButtons(enabled) {
+  const buttons = [webcamButton, callButton, answerButton, hangupButton];
+  buttons.forEach((button) => {
+    button.disabled = !enabled;
+  });
+}
+
+// Function to update participant count
+function updateParticipantCount() {
+  participantCountDisplay.textContent = `Participants: ${participantCount}`;
+}
 
 // 1. Setup media sources
-
 webcamButton.onclick = async () => {
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   remoteStream = new MediaStream();
@@ -56,13 +72,26 @@ webcamButton.onclick = async () => {
   webcamVideo.srcObject = localStream;
   remoteVideo.srcObject = remoteStream;
 
+  // Enable the call offer button and disable others
+  toggleButtons(false);
   callButton.disabled = false;
-  answerButton.disabled = false;
-  webcamButton.disabled = true;
 };
 
 // 2. Create an offer
 callButton.onclick = async () => {
+  // Check if the participant limit is reached
+  if (participantCount >= 2) {
+    alert("Maximum participants reached. Cannot create a new call.");
+    return;
+  }
+
+  // Increment participant count and update display
+  participantCount++;
+  updateParticipantCount();
+
+  // Disable all buttons except for the call offer button
+  toggleButtons(false);
+
   // Reference Firestore collections for signaling
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
@@ -84,7 +113,7 @@ callButton.onclick = async () => {
     type: offerDescription.type,
   };
 
-  await callDoc.set({ offer });
+  await callDoc.set({ offer, participantCount }); // Store the offer and participant count in Firestore
 
   // Listen for remote answer
   callDoc.onSnapshot((snapshot) => {
@@ -105,7 +134,7 @@ callButton.onclick = async () => {
     });
   });
 
-  hangupButton.disabled = false;
+  hangupButton.disabled = false; // Enable hangup button
 };
 
 // 3. Answer the call with the unique ID
@@ -120,7 +149,6 @@ answerButton.onclick = async () => {
   };
 
   const callData = (await callDoc.get()).data();
-
   const offerDescription = callData.offer;
   await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
 
@@ -136,11 +164,25 @@ answerButton.onclick = async () => {
 
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
-      console.log(change);
       if (change.type === 'added') {
         let data = change.doc.data();
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
   });
+
+  // Increment participant count and update display
+  participantCount++;
+  updateParticipantCount();
+};
+
+// Optional: Handle hangup to decrement participant count
+hangupButton.onclick = async () => {
+  // Reset participant count when hangup is called
+  participantCount = Math.max(0, participantCount - 1);
+  updateParticipantCount();
+
+  // Close peer connection and reset UI as needed
+  pc.close();
+  toggleButtons(true); // Enable buttons again after hangup
 };
