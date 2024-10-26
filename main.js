@@ -22,9 +22,7 @@ const realtimeDatabase = firebase.database();
 
 const servers = {
   iceServers: [
-    {
-      urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
-    },
+    { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
   ],
   iceCandidatePoolSize: 10,
 };
@@ -42,6 +40,20 @@ const callInput = document.getElementById('callInput');
 const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
+
+// Function to automatically fill room ID from URL and start webcam
+function autoFillRoomIdAndStartWebcam() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('roomId');
+
+  if (roomId) {
+    callInput.value = roomId;
+    webcamButton.click(); // Automatically start the webcam
+  }
+}
+
+// Run auto-fill function on page load
+window.onload = autoFillRoomIdAndStartWebcam;
 
 // 1. Setup media sources
 webcamButton.onclick = async () => {
@@ -70,19 +82,16 @@ webcamButton.onclick = async () => {
 
 // 2. Create an offer
 callButton.onclick = async () => {
-  // Reference Firestore collections for signaling
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
   const answerCandidates = callDoc.collection('answerCandidates');
 
   callInput.value = callDoc.id;
 
-  // Get candidates for caller, save to db
   pc.onicecandidate = (event) => {
     event.candidate && offerCandidates.add(event.candidate.toJSON());
   };
 
-  // Create offer
   const offerDescription = await pc.createOffer();
   await pc.setLocalDescription(offerDescription);
 
@@ -93,14 +102,12 @@ callButton.onclick = async () => {
 
   await callDoc.set({ offer });
 
-  // Store the call offer along with the participant count in Firebase Realtime Database
   const callRef = realtimeDatabase.ref(`calls/${callDoc.id}`);
   await callRef.set({
     offer,
-    participantCount: 1,  // Initially setting participant count to 1
+    participantCount: 1, // Initially set participant count to 1
   });
 
-  // Listen for remote answer
   callDoc.onSnapshot((snapshot) => {
     const data = snapshot.data();
     if (!pc.currentRemoteDescription && data?.answer) {
@@ -109,7 +116,6 @@ callButton.onclick = async () => {
     }
   });
 
-  // When answered, add candidate to peer connection
   answerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
@@ -148,10 +154,9 @@ answerButton.onclick = async () => {
 
   await callDoc.update({ answer });
 
-  // Update participant count in Firebase Realtime Database
   const callRef = realtimeDatabase.ref(`calls/${callId}`);
   await callRef.update({
-    participantCount: 2,  // Updating participant count to 2 when answered
+    participantCount: 2, // Update participant count to 2 when answered
   });
 
   offerCandidates.onSnapshot((snapshot) => {
