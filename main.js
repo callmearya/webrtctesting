@@ -22,7 +22,9 @@ const realtimeDatabase = firebase.database();
 
 const servers = {
   iceServers: [
-    { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
+    {
+      urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+    },
   ],
   iceCandidatePoolSize: 10,
 };
@@ -41,19 +43,16 @@ const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
-// Function to automatically fill room ID from URL and start webcam
-function autoFillRoomIdAndStartWebcam() {
+// Automatically fill room code from URL and start webcam
+document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('roomId');
+  const roomCode = urlParams.get('roomCode');
 
-  if (roomId) {
-    callInput.value = roomId;
-    webcamButton.click(); // Automatically start the webcam
+  if (roomCode) {
+    callInput.value = roomCode;
+    webcamButton.click(); // Simulate click to start webcam automatically
   }
-}
-
-// Run auto-fill function on page load
-window.onload = autoFillRoomIdAndStartWebcam;
+});
 
 // 1. Setup media sources
 webcamButton.onclick = async () => {
@@ -105,7 +104,7 @@ callButton.onclick = async () => {
   const callRef = realtimeDatabase.ref(`calls/${callDoc.id}`);
   await callRef.set({
     offer,
-    participantCount: 1, // Initially set participant count to 1
+    participantCount: 1,
   });
 
   callDoc.onSnapshot((snapshot) => {
@@ -156,7 +155,7 @@ answerButton.onclick = async () => {
 
   const callRef = realtimeDatabase.ref(`calls/${callId}`);
   await callRef.update({
-    participantCount: 2, // Update participant count to 2 when answered
+    participantCount: 2,
   });
 
   offerCandidates.onSnapshot((snapshot) => {
