@@ -77,6 +77,7 @@ webcamButton.onclick = async () => {
   callButton.disabled = false;
   answerButton.disabled = false;
   webcamButton.disabled = true;
+  hangupButton.disabled = true; // Initially disable hangup button
 };
 
 // 2. Create an offer
@@ -124,7 +125,7 @@ callButton.onclick = async () => {
     });
   });
 
-  hangupButton.disabled = false;
+  hangupButton.disabled = true; // Disable hangup for the caller
 };
 
 // 3. Answer the call with the unique ID
@@ -165,5 +166,32 @@ answerButton.onclick = async () => {
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
+
+    hangupButton.disabled = false; // Enable hangup for the answerer
   });
+};
+
+// 4. Hangup the call
+hangupButton.onclick = async () => {
+  const callId = callInput.value;
+
+  // Stop and disconnect all media streams
+  localStream.getTracks().forEach(track => track.stop());
+  remoteStream.getTracks().forEach(track => track.stop());
+
+  // Disconnect the peer connection
+  pc.close();
+
+  // Remove the room from Firestore and Realtime Database
+  await firestore.collection('calls').doc(callId).delete();
+  await realtimeDatabase.ref(`calls/${callId}`).remove();
+
+  // Clear the inputs and disable buttons
+  callInput.value = '';
+  hangupButton.disabled = true;
+  callButton.disabled = true;
+  answerButton.disabled = true;
+  webcamButton.disabled = false; // Re-enable the webcam button for new calls
+  webcamVideo.srcObject = null; // Clear local video
+  remoteVideo.srcObject = null; // Clear remote video
 };
