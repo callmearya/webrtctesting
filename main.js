@@ -2,6 +2,7 @@ import './style.css';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
