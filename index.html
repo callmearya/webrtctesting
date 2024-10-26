@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Join a Call - WebRTC</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC Demo - Create Call</title>
 </head>
 <body>
-  <h2>Join a Call</h2>
-  <p>Answer the call from another browser window or device</p>
-  
-  <input id="callInput" placeholder="Room Code" />
-  <button id="answerButton">Join</button>
+    <h2>Start Your Webcam</h2>
+    <div class="videos">
+        <span>
+            <h3>Local Stream</h3>
+            <video id="webcamVideo" autoplay playsinline></video>
+        </span>
+        <span>
+            <h3>Remote Stream</h3>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </span>
+    </div>
 
-  <h2>Remote Stream</h2>
-  <video id="remoteVideo" autoplay playsinline></video>
+    <button id="webcamButton">Start Webcam</button>
+    <h2>Create a New Call</h2>
+    <button id="callButton" disabled>Create Call (offer)</button>
 
-  <h2>Hangup</h2>
-  <button id="hangupButton" disabled>Hangup</button>
-
-  <!-- Load the script after HTML content -->
-  <script type="module" src="main.js" defer></script>
+    <script type="module" src="/main.js"></script>
 </body>
 </html>
