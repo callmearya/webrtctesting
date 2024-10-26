@@ -54,16 +54,6 @@ async function startWebcam() {
   }
 }
 
-// Handle room ID from URL
-function handleRoomId() {
-  const params = new URLSearchParams(window.location.search);
-  const roomId = params.get('roomId');
-  if (roomId) {
-    callInput.value = roomId; // Populate the input field with the room ID
-    hangupButton.disabled = false; // Enable the hangup button
-  }
-}
-
 // Call Button - Create a Call Offer
 callButton.onclick = async () => {
   try {
@@ -127,7 +117,7 @@ callButton.onclick = async () => {
 
     // Disable the call button to prevent multiple calls
     callButton.disabled = true;
-    answerButton.disabled = false; // Enable answer button now
+    answerButton.disabled = true;
     hangupButton.disabled = false; // Enable hangup button
 
   } catch (error) {
@@ -170,6 +160,7 @@ answerButton.onclick = async () => {
     };
   });
 
+  // Listen for incoming ICE candidates from offerCandidates
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
@@ -177,6 +168,7 @@ answerButton.onclick = async () => {
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
+  });
 };
 
 // Hangup Button - Cleanup when the user leaves
@@ -192,7 +184,6 @@ hangupButton.onclick = async () => {
 
 // Call this function on page load
 startWebcam();
-handleRoomId();
 
 // Cleanup when the user leaves
 window.onbeforeunload = async () => {
