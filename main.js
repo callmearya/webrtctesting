@@ -56,19 +56,19 @@ async function startWebcam() {
 
 // Function to get query parameters from the URL
 function getQueryParams() {
-    const params = new URLSearchParams(window.location.search);
-    return {
-        roomId: params.get('roomId'),
-    };
+  const params = new URLSearchParams(window.location.search);
+  return {
+    roomId: params.get('roomId'),
+  };
 }
 
 // Call this function to populate the input field and enable the answer button
 function initializeFromQuery() {
-    const { roomId } = getQueryParams();
-    if (roomId) {
-        callInput.value = roomId; // Set the room ID in the input field
-        answerButton.disabled = false; // Enable the answer button
-    }
+  const { roomId } = getQueryParams();
+  if (roomId) {
+    callInput.value = roomId; // Set the room ID in the input field
+    answerButton.disabled = false; // Enable the answer button
+  }
 }
 
 // Call this function on page load
@@ -173,3 +173,25 @@ answerButton.onclick = async () => {
   await callDoc.update({ answer });
 
   // Update participant count in Realtime Database
+  await database.ref('rooms/' + callId).update({
+    participants: firebase.database.ServerValue.increment(1)
+  });
+
+  // Enable the hangup button after answering the call
+  hangupButton.disabled = false;
+};
+
+// Hangup Button - Hangup the Call
+hangupButton.onclick = async () => {
+  pc.close();
+  hangupButton.disabled = true;
+  callButton.disabled = false;
+  answerButton.disabled = true; // Keep answer button disabled after hangup
+  callInput.value = ''; // Clear the call input field
+
+  const callId = callInput.value;
+  await database.ref('rooms/' + callId).remove(); // Remove room from Realtime Database
+};
+
+// Start the webcam on load
+startWebcam();
