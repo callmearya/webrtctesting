@@ -47,17 +47,9 @@ function getRoomIdFromURL() {
   return urlParams.get('roomId');
 }
 
-// Check if there's a room ID in the URL
-const roomId = getRoomIdFromURL();
-if (roomId) {
-  callInput.value = roomId; // Set the call input to the room ID
-  hangupButton.disabled = false; // Enable hangup button
-}
-
-// 1. Setup media sources and create an offer
-callButton.onclick = async () => {
+// Start webcam on page load
+async function startWebcam() {
   try {
-    // Start the webcam
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     remoteStream = new MediaStream();
 
@@ -66,80 +58,25 @@ callButton.onclick = async () => {
       pc.addTrack(track, localStream);
     });
 
-    // Pull tracks from remote stream, add to video stream
-    pc.ontrack = (event) => {
-      event.streams[0].getTracks().forEach((track) => {
-        remoteStream.addTrack(track);
-      });
-    };
-
     // Set local video
     const webcamVideo = document.getElementById('webcamVideo');
     webcamVideo.srcObject = localStream;
 
-    // Reference Firestore collections for signaling
-    const callDoc = firestore.collection('calls').doc();
-    const offerCandidates = callDoc.collection('offerCandidates');
-    const answerCandidates = callDoc.collection('answerCandidates');
-
-    callInput.value = callDoc.id;
-
-    // Save the room code to Realtime Database
-    await database.ref('rooms/' + callDoc.id).set({
-      roomId: callDoc.id,
-      participants: 1 // Initialize with 1 participant
-    });
-
-    console.log("Room ID successfully saved to database:", callDoc.id);
-
-    // Get candidates for caller, save to db
-    pc.onicecandidate = (event) => {
-      event.candidate && offerCandidates.add(event.candidate.toJSON());
-    };
-
-    // Create offer
-    const offerDescription = await pc.createOffer();
-    await pc.setLocalDescription(offerDescription);
-
-    const offer = {
-      sdp: offerDescription.sdp,
-      type: offerDescription.type,
-    };
-
-    await callDoc.set({ offer });
-
-    // Listen for remote answer
-    callDoc.onSnapshot((snapshot) => {
-      const data = snapshot.data();
-      if (!pc.currentRemoteDescription && data?.answer) {
-        const answerDescription = new RTCSessionDescription(data.answer);
-        pc.setRemoteDescription(answerDescription);
-      }
-    });
-
-    // When answered, add candidate to peer connection
-    answerCandidates.onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const candidate = new RTCIceCandidate(change.doc.data());
-          pc.addIceCandidate(candidate);
-        }
-      });
-    });
-
-    // Disable all buttons except the hangup button
-    callButton.disabled = true;
-    answerButton.disabled = true;
-    hangupButton.disabled = true; // Keep hangup enabled
+    // Check for room ID and answer if available
+    const roomId = getRoomIdFromURL();
+    if (roomId) {
+      callInput.value = roomId; // Set the call input to the room ID
+      hangupButton.disabled = false; // Enable hangup button
+      await answerCall(roomId); // Automatically answer the call
+    }
 
   } catch (error) {
-    console.error("Error in creating call:", error);
+    console.error("Error starting webcam:", error);
   }
-};
+}
 
-// 3. Answer the call with the unique ID
-answerButton.onclick = async () => {
-  const callId = callInput.value;
+// Answer the call with the unique ID
+async function answerCall(callId) {
   const callDoc = firestore.collection('calls').doc(callId);
   const answerCandidates = callDoc.collection('answerCandidates');
   const offerCandidates = callDoc.collection('offerCandidates');
@@ -177,7 +114,6 @@ answerButton.onclick = async () => {
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
-  });
 };
 
 // Hangup function
@@ -220,3 +156,6 @@ window.onbeforeunload = async () => {
     });
   }
 };
+
+// Start the webcam when the page loads
+window.onload = startWebcam;
