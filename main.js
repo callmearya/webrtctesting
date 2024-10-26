@@ -1,16 +1,24 @@
 import './style.css';
+
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/database'; // Import Firebase Realtime Database
 
-// Firebase configuration
 const firebaseConfig = {
-  // your config
+  apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
+  authDomain: "lil-testing.firebaseapp.com",
+  databaseURL: "https://lil-testing-default-rtdb.firebaseio.com",
+  projectId: "lil-testing",
+  storageBucket: "lil-testing.appspot.com",
+  messagingSenderId: "309006701748",
+  appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const firestore = firebase.firestore();
+const database = firebase.database(); // Initialize Realtime Database
 
 const servers = {
   iceServers: [
@@ -34,22 +42,12 @@ const callInput = document.getElementById('callInput');
 const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
-const participantCountDisplay = document.getElementById('participantCount'); // New element for displaying participant count
 
-// Initialize participant count
-let participantCount = 0;
-
-// Function to toggle button states
-function toggleButtons(enabled) {
-  const buttons = [webcamButton, callButton, answerButton, hangupButton];
-  buttons.forEach((button) => {
-    button.disabled = !enabled;
-  });
-}
-
-// Function to update participant count
-function updateParticipantCount() {
-  participantCountDisplay.textContent = `Participants: ${participantCount}`;
+// Helper function to disable buttons except the call offer button
+function setButtonState(disable) {
+  webcamButton.disabled = disable;
+  answerButton.disabled = disable;
+  hangupButton.disabled = disable;
 }
 
 // 1. Setup media sources
@@ -72,30 +70,22 @@ webcamButton.onclick = async () => {
   webcamVideo.srcObject = localStream;
   remoteVideo.srcObject = remoteStream;
 
-  // Enable the call offer button and disable others
-  toggleButtons(false);
+  // Enable the call button and grey out other buttons
   callButton.disabled = false;
+  setButtonState(true); // Disable all other buttons
 };
 
 // 2. Create an offer
 callButton.onclick = async () => {
-  // Check if the participant limit is reached
-  if (participantCount >= 2) {
-    alert("Maximum participants reached. Cannot create a new call.");
-    return;
-  }
-
-  // Increment participant count and update display
-  participantCount++;
-  updateParticipantCount();
-
-  // Disable all buttons except for the call offer button
-  toggleButtons(false);
-
   // Reference Firestore collections for signaling
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
   const answerCandidates = callDoc.collection('answerCandidates');
+
+  // Store participant count in Realtime Database
+  await database.ref(`calls/${callDoc.id}`).set({
+    participants: 1, // Start with 1 participant (caller)
+  });
 
   callInput.value = callDoc.id;
 
@@ -113,7 +103,12 @@ callButton.onclick = async () => {
     type: offerDescription.type,
   };
 
-  await callDoc.set({ offer, participantCount }); // Store the offer and participant count in Firestore
+  await callDoc.set({ offer });
+
+  // Update participant count in Realtime Database
+  await database.ref(`calls/${callDoc.id}`).update({
+    participants: 1, // Update count (for now, only the caller)
+  });
 
   // Listen for remote answer
   callDoc.onSnapshot((snapshot) => {
@@ -134,7 +129,7 @@ callButton.onclick = async () => {
     });
   });
 
-  hangupButton.disabled = false; // Enable hangup button
+  hangupButton.disabled = false;
 };
 
 // 3. Answer the call with the unique ID
@@ -162,6 +157,12 @@ answerButton.onclick = async () => {
 
   await callDoc.update({ answer });
 
+  // Update participant count when answered
+  const currentCountRef = database.ref(`calls/${callId}/participants`);
+  currentCountRef.transaction((currentCount) => {
+    return (currentCount || 0) + 1; // Increment the participant count
+  });
+
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
@@ -170,19 +171,4 @@ answerButton.onclick = async () => {
       }
     });
   });
-
-  // Increment participant count and update display
-  participantCount++;
-  updateParticipantCount();
-};
-
-// Optional: Handle hangup to decrement participant count
-hangupButton.onclick = async () => {
-  // Reset participant count when hangup is called
-  participantCount = Math.max(0, participantCount - 1);
-  updateParticipantCount();
-
-  // Close peer connection and reset UI as needed
-  pc.close();
-  toggleButtons(true); // Enable buttons again after hangup
 };
