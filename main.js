@@ -16,6 +16,7 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
+
 const firestore = firebase.firestore();
 const database = firebase.database();
 
@@ -148,6 +149,14 @@ answerButton.onclick = async () => {
 
   await callDoc.update({ answer });
 
+  // Update participant count in Realtime Database
+  await database.ref('rooms/' + callId).transaction((currentData) => {
+    return {
+      ...currentData,
+      participants: (currentData.participants || 0) + 1 // Increment participant count
+    };
+  });
+
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
@@ -156,4 +165,20 @@ answerButton.onclick = async () => {
       }
     });
   });
+};
+
+// Cleanup when the user leaves
+window.onbeforeunload = async () => {
+  const callId = callInput.value;
+  if (callId) {
+    // Decrement participant count
+    await database.ref('rooms/' + callId).transaction((currentData) => {
+      if (currentData) {
+        return {
+          ...currentData,
+          participants: currentData.participants > 0 ? currentData.participants - 1 : 0
+        };
+      }
+    });
+  }
 };
