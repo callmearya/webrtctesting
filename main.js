@@ -33,9 +33,11 @@ const servers = {
 // Global State
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
+let remoteStream = new MediaStream(); // Create a new MediaStream for remote
 
 // HTML elements
 const webcamVideo = document.getElementById('webcamVideo');
+const remoteVideo = document.getElementById('remoteVideo'); // New remote video element
 const callButton = document.getElementById('callButton');
 
 // 1. Setup media sources and create call
@@ -45,7 +47,7 @@ callButton.onclick = async () => {
     webcamVideo.srcObject = localStream;
 
     const callsRef = database.ref('calls');
-    
+
     // Check the current number of participants
     const snapshot = await callsRef.once('value');
     const activeCalls = snapshot.val() || {};
@@ -92,6 +94,14 @@ callButton.onclick = async () => {
             pc.setRemoteDescription(answerDescription);
         }
     });
+
+    // Pull tracks from remote stream, add to video stream
+    pc.ontrack = (event) => {
+        event.streams[0].getTracks().forEach((track) => {
+            remoteStream.addTrack(track);
+        });
+        remoteVideo.srcObject = remoteStream; // Set the remote video stream
+    };
 
     // Handle incoming ICE candidates
     offerCandidates.onSnapshot((snapshot) => {
