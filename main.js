@@ -114,7 +114,8 @@ async function answerCall(callId) {
         pc.addIceCandidate(new RTCIceCandidate(data));
       }
     });
-};
+  });
+}
 
 // Hangup function
 hangupButton.onclick = async () => {
