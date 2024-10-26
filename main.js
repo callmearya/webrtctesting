@@ -41,6 +41,19 @@ const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
+// Function to get the room ID from the URL
+function getRoomIdFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('roomId');
+}
+
+// Check if there's a room ID in the URL
+const roomId = getRoomIdFromURL();
+if (roomId) {
+  callInput.value = roomId; // Set the call input to the room ID
+  hangupButton.disabled = false; // Enable hangup button
+}
+
 // 1. Setup media sources and create an offer
 callButton.onclick = async () => {
   try {
@@ -165,6 +178,31 @@ answerButton.onclick = async () => {
       }
     });
   });
+};
+
+// Hangup function
+hangupButton.onclick = async () => {
+  const callId = callInput.value;
+
+  // Remove the room from the Realtime Database
+  await database.ref('rooms/' + callId).remove().catch(error => {
+    console.error("Error removing room:", error);
+  });
+
+  // Reset local and remote streams
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+  if (remoteStream) {
+    remoteStream.getTracks().forEach(track => track.stop());
+  }
+
+  // Close the peer connection
+  pc.close();
+  
+  // Reset the state
+  callInput.value = '';
+  hangupButton.disabled = true; // Disable hangup button again
 };
 
 // Cleanup when the user leaves
