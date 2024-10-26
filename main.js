@@ -3,6 +3,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/database';
 
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
   authDomain: "lil-testing.firebaseapp.com",
@@ -13,6 +14,7 @@ const firebaseConfig = {
   appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
 
+// Initialize Firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -20,6 +22,7 @@ if (!firebase.apps.length) {
 const firestore = firebase.firestore();
 const database = firebase.database();
 
+// RTC Configuration
 const servers = {
   iceServers: [
     {
@@ -29,10 +32,9 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
-// Global State
+// Global state
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
-let remoteStream = null;
 
 // HTML elements
 const callButton = document.getElementById('callButton');
@@ -40,49 +42,100 @@ const callInput = document.getElementById('callInput');
 const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
+const webcamVideo = document.getElementById('webcamVideo');
 
-// Function to get the room ID from the URL
-function getRoomIdFromURL() {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('roomId');
-}
-
-// Start webcam on page load
+// Start the webcam automatically on page load
 async function startWebcam() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    remoteStream = new MediaStream();
+    webcamVideo.srcObject = localStream;
+  } catch (error) {
+    console.error("Error accessing webcam:", error);
+  }
+}
 
+// Call Button - Create a Call Offer
+callButton.onclick = async () => {
+  try {
     // Push tracks from local stream to peer connection
     localStream.getTracks().forEach((track) => {
       pc.addTrack(track, localStream);
     });
 
-    // Set local video
-    const webcamVideo = document.getElementById('webcamVideo');
-    webcamVideo.srcObject = localStream;
+    // Create a call document in Firestore
+    const callDoc = firestore.collection('calls').doc();
+    const offerCandidates = callDoc.collection('offerCandidates');
+    const answerCandidates = callDoc.collection('answerCandidates');
 
-    // Check for room ID and answer if available
-    const roomId = getRoomIdFromURL();
-    if (roomId) {
-      callInput.value = roomId; // Set the call input to the room ID
-      hangupButton.disabled = false; // Enable hangup button
-      await answerCall(roomId); // Automatically answer the call
-    }
+    // Set the call input to the new room ID
+    callInput.value = callDoc.id;
+
+    // Save the room code to Realtime Database
+    await database.ref('rooms/' + callDoc.id).set({
+      roomId: callDoc.id,
+      participants: 1 // Initialize with 1 participant
+    });
+
+    console.log("Room ID successfully saved to database:", callDoc.id);
+
+    // Handle ICE candidates
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        offerCandidates.add(event.candidate.toJSON());
+      }
+    };
+
+    // Create offer
+    const offerDescription = await pc.createOffer();
+    await pc.setLocalDescription(offerDescription);
+
+    const offer = {
+      sdp: offerDescription.sdp,
+      type: offerDescription.type,
+    };
+
+    await callDoc.set({ offer });
+
+    // Listen for remote answer
+    callDoc.onSnapshot((snapshot) => {
+      const data = snapshot.data();
+      if (data?.answer && !pc.currentRemoteDescription) {
+        const answerDescription = new RTCSessionDescription(data.answer);
+        pc.setRemoteDescription(answerDescription);
+      }
+    });
+
+    // Listen for answer candidates
+    answerCandidates.onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const candidate = new RTCIceCandidate(change.doc.data());
+          pc.addIceCandidate(candidate);
+        }
+      });
+    });
+
+    // Disable the call button to prevent multiple calls
+    callButton.disabled = true;
+    answerButton.disabled = true;
+    hangupButton.disabled = false; // Enable hangup button
 
   } catch (error) {
-    console.error("Error starting webcam:", error);
+    console.error("Error in creating call:", error);
   }
-}
+};
 
-// Answer the call with the unique ID
-async function answerCall(callId) {
+// Answer Button - Answer the Call
+answerButton.onclick = async () => {
+  const callId = callInput.value;
   const callDoc = firestore.collection('calls').doc(callId);
   const answerCandidates = callDoc.collection('answerCandidates');
   const offerCandidates = callDoc.collection('offerCandidates');
 
   pc.onicecandidate = (event) => {
-    event.candidate && answerCandidates.add(event.candidate.toJSON());
+    if (event.candidate) {
+      answerCandidates.add(event.candidate.toJSON());
+    }
   };
 
   const callData = (await callDoc.get()).data();
@@ -115,32 +168,21 @@ async function answerCall(callId) {
       }
     });
   });
-}
+};
 
-// Hangup function
+// Hangup Button - Cleanup when the user leaves
 hangupButton.onclick = async () => {
   const callId = callInput.value;
-
-  // Remove the room from the Realtime Database
-  await database.ref('rooms/' + callId).remove().catch(error => {
-    console.error("Error removing room:", error);
-  });
-
-  // Reset local and remote streams
-  if (localStream) {
-    localStream.getTracks().forEach(track => track.stop());
+  if (callId) {
+    await database.ref('rooms/' + callId).remove(); // Remove room from Realtime Database
   }
-  if (remoteStream) {
-    remoteStream.getTracks().forEach(track => track.stop());
-  }
-
-  // Close the peer connection
+  // Clean up local streams and peer connection
+  localStream.getTracks().forEach(track => track.stop());
   pc.close();
-  
-  // Reset the state
-  callInput.value = '';
-  hangupButton.disabled = true; // Disable hangup button again
 };
+
+// Call this function on page load
+startWebcam();
 
 // Cleanup when the user leaves
 window.onbeforeunload = async () => {
@@ -157,6 +199,3 @@ window.onbeforeunload = async () => {
     });
   }
 };
-
-// Start the webcam when the page loads
-window.onload = startWebcam;
