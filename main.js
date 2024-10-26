@@ -117,7 +117,7 @@ callButton.onclick = async () => {
     // Disable all buttons except the hangup button
     callButton.disabled = true;
     answerButton.disabled = true;
-    hangupButton.disabled = false; // Keep hangup enabled
+    hangupButton.disabled = true; // Keep hangup enabled
 
   } catch (error) {
     console.error("Error in creating call:", error);
