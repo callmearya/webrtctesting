@@ -1,19 +1,3 @@
-import './style.css';
-
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/database'; // Import Firebase Realtime Database
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD1b7InCyJf03f82MBrFCXNd_1lir3nWrQ",
-  authDomain: "lil-testing.firebaseapp.com",
-  databaseURL: "https://lil-testing-default-rtdb.firebaseio.com",
-  projectId: "lil-testing",
-  storageBucket: "lil-testing.appspot.com",
-  messagingSenderId: "309006701748",
-  appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
-};
-
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -43,11 +27,12 @@ const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
-// Helper function to disable buttons except the call offer button
-function setButtonState(disable) {
-  webcamButton.disabled = disable;
-  answerButton.disabled = disable;
-  hangupButton.disabled = disable;
+// Helper function to disable buttons
+function disableButtons(exceptButtons) {
+  const buttons = [webcamButton, callButton, answerButton, hangupButton];
+  buttons.forEach((button) => {
+    button.disabled = !exceptButtons.includes(button);
+  });
 }
 
 // 1. Setup media sources
@@ -70,9 +55,9 @@ webcamButton.onclick = async () => {
   webcamVideo.srcObject = localStream;
   remoteVideo.srcObject = remoteStream;
 
-  // Enable the call button and grey out other buttons
+  // Enable call and answer buttons
   callButton.disabled = false;
-  setButtonState(true); // Disable all other buttons
+  answerButton.disabled = false;
 };
 
 // 2. Create an offer
@@ -109,6 +94,9 @@ callButton.onclick = async () => {
   await database.ref(`calls/${callDoc.id}`).update({
     participants: 1, // Update count (for now, only the caller)
   });
+
+  // Disable all buttons except hangup
+  disableButtons([hangupButton]);
 
   // Listen for remote answer
   callDoc.onSnapshot((snapshot) => {
@@ -162,6 +150,9 @@ answerButton.onclick = async () => {
   currentCountRef.transaction((currentCount) => {
     return (currentCount || 0) + 1; // Increment the participant count
   });
+
+  // Disable answer button and all others except hangup
+  disableButtons([hangupButton]);
 
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
