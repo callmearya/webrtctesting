@@ -35,6 +35,7 @@ const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
 let isCaller = false; // Flag to track if the user is the caller
+let popupWindow = null; // Global variable to store the popup window reference
 
 // HTML elements
 const webcamButton = document.getElementById('webcamButton');
@@ -150,6 +151,11 @@ callButton.onclick = async () => {
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
   callInput.disabled = true;
+
+  // Open the popup window with the call URL
+  const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
+  const popupFeatures = "width=600,height=400,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
+  popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
 };
 
 // 3. Answer the call with the unique ID
@@ -212,6 +218,11 @@ hangupButton.onclick = async () => {
   // Remove the room from Firestore and Realtime Database
   await firestore.collection('calls').doc(callId).delete();
   await realtimeDatabase.ref(`calls/${callId}`).remove();
+
+  // Close the popup window for the user who pressed hangup
+  if (popupWindow) {
+    popupWindow.close(); // Close the popup window
+  }
 
   // Redirect to the appropriate URL based on the user's role
   if (isCaller) {
