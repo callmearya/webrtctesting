@@ -13,7 +13,6 @@ const firebaseConfig = {
   messagingSenderId: "309006701748",
   appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
-
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -56,28 +55,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // 1. Setup media sources
 webcamButton.onclick = async () => {
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  remoteStream = new MediaStream();
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    remoteStream = new MediaStream();
 
-  // Push tracks from local stream to peer connection
-  localStream.getTracks().forEach((track) => {
-    pc.addTrack(track, localStream);
-  });
-
-  // Pull tracks from remote stream, add to video stream
-  pc.ontrack = (event) => {
-    event.streams[0].getTracks().forEach((track) => {
-      remoteStream.addTrack(track);
+    // Push tracks from local stream to peer connection
+    localStream.getTracks().forEach((track) => {
+      pc.addTrack(track, localStream);
     });
-  };
 
-  webcamVideo.srcObject = localStream;
-  remoteVideo.srcObject = remoteStream;
+    // Pull tracks from remote stream, add to video stream
+    pc.ontrack = (event) => {
+      event.streams[0].getTracks().forEach((track) => {
+        remoteStream.addTrack(track); // Ensure audio tracks are added
+      });
+    };
 
-  callButton.disabled = false;
-  answerButton.disabled = false;
-  webcamButton.disabled = true;
-  hangupButton.disabled = true; // Initially disable hangup button
+    webcamVideo.srcObject = localStream;
+    remoteVideo.srcObject = remoteStream;
+
+    callButton.disabled = false;
+    answerButton.disabled = false;
+    webcamButton.disabled = true;
+    hangupButton.disabled = true; // Initially disable hangup button
+  } catch (error) {
+    console.error('Error accessing media devices.', error);
+  }
 };
 
 // 2. Create an offer
