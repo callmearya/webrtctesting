@@ -5,6 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebRTC Demo</title>
+    <link rel="stylesheet" href="styles.css" /> <!-- Ensure your CSS file is linked -->
 </head>
 <body>
     <div class="background-video">
@@ -24,11 +25,17 @@
             </div>
         </div>
 
-        <button id="webcamButton">Start Webcam</button>
-        <button id="callButton" disabled>Create Call (offer)</button>
-        <input id="callInput" type="text" placeholder="Enter room code" />
-        <button id="answerButton" disabled>Answer</button>
-        <button id="hangupButton" disabled>Hangup</button>
+        <div class="button-row">
+            <button id="webcamButton">Start Webcam</button>
+            <button id="callButton" disabled>Create Call (offer)</button>
+        </div>
+
+        <div>
+            <input id="callInput" type="text" placeholder="Enter room code" />
+            <button id="answerButton" disabled>Answer</button>
+        </div>
+
+        <button class="hangup-button" id="hangupButton" disabled>Hangup</button>
     </div>
 
     <script type="module" src="/main.js"></script>
