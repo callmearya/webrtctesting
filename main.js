@@ -177,9 +177,6 @@ answerButton.onclick = async () => {
     sdp: answerDescription.sdp,
    // Open the popup window with the call URL
     
-  const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
-  const popupFeatures = "width=800,height=700,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
-  popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
   };
 
   await callDoc.update({ answer });
@@ -202,6 +199,10 @@ answerButton.onclick = async () => {
 
   // Start monitoring room deletion
   monitorRoomDeletion(callId);
+
+    const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
+  const popupFeatures = "width=800,height=700,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
+  popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
 };
 
 // 4. Hangup the call
