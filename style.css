@@ -14,10 +14,6 @@ body {
     color: #2c3e50;
     margin: 0;
     overflow: hidden;
-    display: flex; /* Enable flexbox */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    height: 100vh; /* Full viewport height */
 }
 
 .background-video {
@@ -43,19 +39,14 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px; /* Reduced padding */
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.7); /* More transparent background */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    width: 90%; /* Smaller width */
-    max-width: 400px; /* Limit maximum width */
+    padding: 20px;
 }
 
 .videos {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .video-container {
@@ -66,29 +57,41 @@ video {
     width: 40vw;
     height: 30vw;
     background: #2c3e50;
-    border-radius: 8px; /* Rounded corners for videos */
+    border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-height: 400px; /* Set maximum height */
+    overflow-y: auto; /* Allow vertical scrolling */
+    width: 90%; /* Width of button container */
+    background: rgba(255, 255, 255, 0.7); /* More transparent background */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the button container */
 }
 
 .button-row {
     display: flex;
-    justify-content: space-between; /* Distribute buttons evenly */
-    width: 100%; /* Full width of container */
-    margin-bottom: 10px; /* Space between rows */
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 button {
-    background: linear-gradient(135deg, #007bff, #0056b3); /* Gradient background */
+    background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     border: none;
     padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
-    margin: 0 5px; /* Space between buttons */
+    margin: 0 5px;
     flex: 1; /* Allow buttons to grow */
     font-size: 16px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5); /* Button shadow */
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5);
 }
 
 button:disabled {
@@ -97,7 +100,7 @@ button:disabled {
 }
 
 button:not(:disabled):hover {
-    background: linear-gradient(135deg, #0056b3, #004494); /* Darker gradient on hover */
+    background: linear-gradient(135deg, #0056b3, #004494);
     transform: scale(1.05);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
@@ -112,22 +115,16 @@ input {
 }
 
 input:focus {
-    border: 2px solid #007bff; /* Highlight border on focus */
-    outline: none; /* Remove outline */
+    border: 2px solid #007bff;
+    outline: none;
 }
 
 .hangup-button {
-    background-color: #e74c3c; /* Red color for hangup button */
-    width: 80%; /* Consistent width with other buttons */
-    margin-top: 20px; /* Space above hangup button */
+    background-color: #e74c3c;
+    width: 80%;
+    margin-top: 20px;
 }
 
 .hangup-button:hover {
-    background-color: #c0392b; /* Darker red on hover */
-}
-.button-row {
-    display: flex;
-    justify-content: space-between; /* Distribute buttons evenly */
-    width: 100%; /* Full width of container */
-    margin-bottom: 10px; /* Space between rows */
+    background-color: #c0392b;
 }
