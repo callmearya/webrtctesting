@@ -39,10 +39,12 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    padding: 20px; /* Reduced padding */
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.9); /* Light background for contrast */
+    background: rgba(255, 255, 255, 0.7); /* More transparent background */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 90%; /* Smaller width */
+    max-width: 400px; /* Limit maximum width */
 }
 
 .videos {
@@ -64,6 +66,13 @@ video {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.button-row {
+    display: flex;
+    justify-content: space-between; /* Distribute buttons evenly */
+    width: 100%; /* Full width of container */
+    margin-bottom: 10px; /* Space between rows */
+}
+
 button {
     background: linear-gradient(135deg, #007bff, #0056b3); /* Gradient background */
     color: white;
@@ -71,8 +80,8 @@ button {
     padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
-    margin: 10px 0;
-    width: 80%;
+    margin: 0 5px; /* Space between buttons */
+    flex: 1; /* Allow buttons to grow */
     font-size: 16px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5); /* Button shadow */
@@ -101,4 +110,14 @@ input {
 input:focus {
     border: 2px solid #007bff; /* Highlight border on focus */
     outline: none; /* Remove outline */
+}
+
+.hangup-button {
+    background-color: #e74c3c; /* Red color for hangup button */
+    width: 80%; /* Consistent width with other buttons */
+    margin-top: 20px; /* Space above hangup button */
+}
+
+.hangup-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
 }
