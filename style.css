@@ -54,7 +54,7 @@ body {
 }
 
 video {
-    width: 45vw;  /* Increased width for larger video */
+    width: 45vw; /* Increased width for larger video */
     height: auto; /* Maintain aspect ratio */
     max-height: 50vh; /* Increased max height */
     background: #2c3e50;
@@ -76,7 +76,7 @@ video {
 
 .button-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around; /* Changed to space-around for shorter buttons */
     width: 100%;
     margin-bottom: 10px;
 }
@@ -85,11 +85,11 @@ button {
     background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     border: none;
-    padding: 10px 0; /* Adjusted padding for better fitting */
+    padding: 8px 12px; /* Adjusted padding for a more compact button */
     border-radius: 8px;
     cursor: pointer;
     margin: 0 5px;
-    flex: 1; /* Allow buttons to grow */
+    flex: 0 0 auto; /* Prevents buttons from growing */
     font-size: 14px; /* Adjusted font size */
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5);
