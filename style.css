@@ -122,7 +122,7 @@ input:focus {
 
 .hangup-button {
     background-color: #e74c3c;
-    width: 70%; /* Reduced width for hangup button */
+    width: 40%; /* Reduced width for hangup button */
     margin-top: 10px;
 }
 
