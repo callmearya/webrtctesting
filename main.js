@@ -13,6 +13,7 @@ const firebaseConfig = {
   messagingSenderId: "309006701748",
   appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
+
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -209,6 +210,6 @@ hangupButton.onclick = async () => {
   await firestore.collection('calls').doc(callId).delete();
   await realtimeDatabase.ref(`calls/${callId}`).remove();
 
-  // Redirect to the specified URL
-  window.location.href = "https://sihtesting.netlify.app";
+  // Redirect to the specified URL for the user who pressed hangup
+  window.location.href = "https://doctortestinglil.netlify.app";
 };
