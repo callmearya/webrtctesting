@@ -1,33 +1,23 @@
-/* Button States */
-button:active {
-  transform: scale(1.05);
-}
-button:hover {
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+@import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
+
+body {
+  font-family: 'Syne Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin: 80px 10px;
 }
 
-/* Call Status */
-.connected {
-  color: #27ae60;
-}
-.disconnected {
-  color: #e74c3c;
-}
-
-/* Video Effects */
-video.active {
-  border: 2px solid #2ecc71;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-}
-video.inactive {
-  filter: grayscale(1);
+video {
+  width: 40vw;
+  height: 30vw;
+  margin: 2rem;
+  background: #2c3e50;
 }
 
-/* Animations */
-.fade-in {
-  animation: fadeIn 0.6s ease-out;
-}
-@keyframes fadeIn {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+.videos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
