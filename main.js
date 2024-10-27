@@ -34,6 +34,7 @@ const servers = {
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
+let isCaller = false; // Flag to identify the caller
 let participantCount = 0; // Keep track of participant count
 
 // HTML elements
@@ -88,6 +89,7 @@ webcamButton.onclick = async () => {
 
 // 2. Create an offer
 callButton.onclick = async () => {
+  isCaller = true; // Set the flag to indicate this user is the caller
   const callDoc = firestore.collection('calls').doc();
   const offerCandidates = callDoc.collection('offerCandidates');
   const answerCandidates = callDoc.collection('answerCandidates');
@@ -205,10 +207,10 @@ hangupButton.onclick = async () => {
   webcamVideo.srcObject = null; // Clear local video
   remoteVideo.srcObject = null; // Clear remote video
 
-  // Check if the user is the answerer and redirect the caller
-  if (participantCount === 2) { // Answerer is hanging up
-      window.close(); // Close the popup for the answerer
-  } else {
+  // Redirect logic based on who is hanging up
+  if (isCaller) {
       window.open('https://google.com', '_self'); // Redirect the caller to google.com
+  } else {
+      window.close(); // Close the popup for the answerer
   }
 };
