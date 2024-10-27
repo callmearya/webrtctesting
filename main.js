@@ -83,6 +83,18 @@ webcamButton.onclick = async () => {
   }
 };
 
+// Function to monitor room deletion and redirect
+const monitorRoomDeletion = async (callId) => {
+  const callRef = realtimeDatabase.ref(`calls/${callId}`);
+
+  callRef.on('value', (snapshot) => {
+    if (!snapshot.exists()) {
+      // Room has been deleted; redirect the user
+      window.location.href = "https://sihtesting.netlify.app";
+    }
+  });
+};
+
 // 2. Create an offer
 callButton.onclick = async () => {
   const callDoc = firestore.collection('calls').doc();
@@ -127,6 +139,9 @@ callButton.onclick = async () => {
       }
     });
   });
+
+  // Start monitoring room deletion
+  monitorRoomDeletion(callDoc.id);
 
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
@@ -174,6 +189,9 @@ answerButton.onclick = async () => {
 
     hangupButton.disabled = false; // Enable hangup for the answerer
   });
+
+  // Start monitoring room deletion
+  monitorRoomDeletion(callId);
 };
 
 // 4. Hangup the call
@@ -191,12 +209,6 @@ hangupButton.onclick = async () => {
   await firestore.collection('calls').doc(callId).delete();
   await realtimeDatabase.ref(`calls/${callId}`).remove();
 
-  // Clear the inputs and disable buttons
-  callInput.value = '';
-  hangupButton.disabled = true;
-  callButton.disabled = true;
-  answerButton.disabled = true;
-  webcamButton.disabled = false; // Re-enable the webcam button for new calls
-  webcamVideo.srcObject = null; // Clear local video
-  remoteVideo.srcObject = null; // Clear remote video
+  // Redirect to the specified URL
+  window.location.href = "https://sihtesting.netlify.app";
 };
