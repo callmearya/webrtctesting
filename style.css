@@ -40,7 +40,6 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    width: 100%; /* Full width of the viewport */
 }
 
 .videos {
@@ -55,9 +54,9 @@ body {
 }
 
 video {
-    width: 40vw;
+    width: 45vw;  /* Increased width for larger video */
     height: auto; /* Maintain aspect ratio */
-    max-height: 30vh; /* Limit max height */
+    max-height: 50vh; /* Increased max height */
     background: #2c3e50;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -69,7 +68,7 @@ video {
     align-items: center;
     max-height: 400px; /* Set maximum height */
     overflow-y: auto; /* Allow vertical scrolling */
-    width: 100%; /* Full width of button container */
+    width: 80%; /* Reduced width for button container */
     background: rgba(255, 255, 255, 0.7); /* More transparent background */
     border-radius: 10px; /* Rounded corners */
     padding: 10px; /* Padding inside the button container */
