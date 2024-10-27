@@ -17,6 +17,7 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
+
 const firestore = firebase.firestore();
 const realtimeDatabase = firebase.database();
 
@@ -33,6 +34,7 @@ const servers = {
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
+let isCaller = false; // Flag to track if the user is the caller
 
 // HTML elements
 const webcamButton = document.getElementById('webcamButton');
@@ -103,6 +105,7 @@ callButton.onclick = async () => {
   const answerCandidates = callDoc.collection('answerCandidates');
 
   callInput.value = callDoc.id;
+  isCaller = true; // Set the flag as the user is the caller
 
   pc.onicecandidate = (event) => {
     event.candidate && offerCandidates.add(event.candidate.toJSON());
@@ -210,6 +213,12 @@ hangupButton.onclick = async () => {
   await firestore.collection('calls').doc(callId).delete();
   await realtimeDatabase.ref(`calls/${callId}`).remove();
 
-  // Redirect to the specified URL for the user who pressed hangup
-  window.location.href = "https://doctortestinglil.netlify.app";
+  // Redirect to the appropriate URL based on the user's role
+  if (isCaller) {
+    // If the user is the caller
+    window.location.href = "https://doctortestinglil.netlify.app";
+  } else {
+    // If the user is the answerer
+    window.location.href = "https://sihtesting.netlify.app";
+  }
 };
