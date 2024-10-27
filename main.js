@@ -108,6 +108,10 @@ callButton.onclick = async () => {
     participantCount: 1,
   });
 
+  // Disable the answer button and call input field
+  answerButton.disabled = true; // Grey out answer button
+  callInput.disabled = true; // Grey out input field
+
   callDoc.onSnapshot((snapshot) => {
     const data = snapshot.data();
     if (!pc.currentRemoteDescription && data?.answer) {
@@ -119,7 +123,7 @@ callButton.onclick = async () => {
   answerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
-        const candidate = new RTCIceCandidate(change.doc.data());
+        const candidate = new RTCiceCandidate(change.doc.data());
         pc.addIceCandidate(candidate);
       }
     });
@@ -188,6 +192,7 @@ hangupButton.onclick = async () => {
 
   // Clear the inputs and disable buttons
   callInput.value = '';
+  callInput.disabled = false; // Re-enable the input field for new calls
   hangupButton.disabled = true;
   callButton.disabled = true;
   answerButton.disabled = true;
