@@ -205,10 +205,10 @@ hangupButton.onclick = async () => {
   webcamVideo.srcObject = null; // Clear local video
   remoteVideo.srcObject = null; // Clear remote video
 
-  // Check if the user is the caller and redirect the other participant
-  if (participantCount === 1) { // Caller is hanging up
-      window.open('https://doctortestinglil.netlify.app', '_self'); // Redirect to the specified URL
-  } else {
+  // Check if the user is the answerer and redirect the caller
+  if (participantCount === 2) { // Answerer is hanging up
       window.close(); // Close the popup for the answerer
+  } else {
+      window.open('https://google.com', '_self'); // Redirect the caller to google.com
   }
 };
