@@ -211,8 +211,7 @@ hangupButton.onclick = async () => {
   window.location.href = 'https://sihtesting.netlify.app'; // Redirect both to the specified URL
 
   // Close the popup for the user who pressed hangup
-  if (isCaller) {
-      // If caller pressed hangup, close the popup (only if the environment supports this)
-      window.close(); 
-  }
+  setTimeout(() => {
+    window.close(); // Close the popup after redirect
+  }, 1000); // Adjust time if needed
 };
