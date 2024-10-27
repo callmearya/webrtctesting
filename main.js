@@ -13,11 +13,9 @@ const firebaseConfig = {
   messagingSenderId: "309006701748",
   appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
-
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-
 const firestore = firebase.firestore();
 const realtimeDatabase = firebase.database();
 
@@ -34,8 +32,6 @@ const servers = {
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
-let isCaller = false; // Flag to track if the user is the caller
-let popupWindow = null; // Global variable to store the popup window reference
 
 // HTML elements
 const webcamButton = document.getElementById('webcamButton');
@@ -87,18 +83,6 @@ webcamButton.onclick = async () => {
   }
 };
 
-// Function to monitor room deletion and redirect
-const monitorRoomDeletion = async (callId, isPopupOpen) => {
-  const callRef = realtimeDatabase.ref(`calls/${callId}`);
-
-  callRef.on('value', (snapshot) => {
-    if (!snapshot.exists() && isPopupOpen) {
-      // Room has been deleted and popup is open; redirect the user
-      window.location.href = "https://sihtesting.netlify.app";
-    }
-  });
-};
-
 // 2. Create an offer
 callButton.onclick = async () => {
   const callDoc = firestore.collection('calls').doc();
@@ -106,7 +90,6 @@ callButton.onclick = async () => {
   const answerCandidates = callDoc.collection('answerCandidates');
 
   callInput.value = callDoc.id;
-  isCaller = true; // Set the flag as the user is the caller
 
   pc.onicecandidate = (event) => {
     event.candidate && offerCandidates.add(event.candidate.toJSON());
@@ -144,9 +127,6 @@ callButton.onclick = async () => {
       }
     });
   });
-
-  // Start monitoring room deletion
-  monitorRoomDeletion(callDoc.id, false); // Pass false as the popup is not open yet
 
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
@@ -194,14 +174,6 @@ answerButton.onclick = async () => {
 
     hangupButton.disabled = false; // Enable hangup for the answerer
   });
-
-  // Open the popup window with the call URL
-  const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
-  const popupFeatures = "width=800,height=700,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
-  popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
-
-  // Start monitoring room deletion with popup open flag
-  monitorRoomDeletion(callId, true);
 };
 
 // 4. Hangup the call
@@ -219,17 +191,12 @@ hangupButton.onclick = async () => {
   await firestore.collection('calls').doc(callId).delete();
   await realtimeDatabase.ref(`calls/${callId}`).remove();
 
-  // Close the popup window for the user who pressed hangup
-  if (popupWindow) {
-    popupWindow.close(); // Close the popup window
-  }
-
-  // Redirect to the appropriate URL based on the user's role
-  if (isCaller) {
-    // If the user is the caller
-    window.location.href = "https://doctortestinglil.netlify.app";
-  } else {
-    // If the user is the answerer
-    window.location.href = "https://sihtesting.netlify.app";
-  }
+  // Clear the inputs and disable buttons
+  callInput.value = '';
+  hangupButton.disabled = true;
+  callButton.disabled = true;
+  answerButton.disabled = true;
+  webcamButton.disabled = false; // Re-enable the webcam button for new calls
+  webcamVideo.srcObject = null; // Clear local video
+  remoteVideo.srcObject = null; // Clear remote video
 };
