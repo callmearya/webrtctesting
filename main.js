@@ -137,6 +137,7 @@ callButton.onclick = async () => {
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
   callInput.disabled = true;
+  callButton.disabled=true;
 };
 
 // 3. Answer the call with the unique ID
