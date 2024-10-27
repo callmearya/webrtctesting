@@ -151,11 +151,6 @@ callButton.onclick = async () => {
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
   callInput.disabled = true;
-
-  // Open the popup window with the call URL
-  const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
-  const popupFeatures = "width=600,height=400,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
-  popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
 };
 
 // 3. Answer the call with the unique ID
@@ -180,6 +175,11 @@ answerButton.onclick = async () => {
   const answer = {
     type: answerDescription.type,
     sdp: answerDescription.sdp,
+   // Open the popup window with the call URL
+    
+  const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
+  const popupFeatures = "width=800,height=700,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
+  popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
   };
 
   await callDoc.update({ answer });
