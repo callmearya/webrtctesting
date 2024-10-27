@@ -40,6 +40,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    width: 100%; /* Full width of the viewport */
 }
 
 .videos {
@@ -55,7 +56,8 @@ body {
 
 video {
     width: 40vw;
-    height: 30vw;
+    height: auto; /* Maintain aspect ratio */
+    max-height: 30vh; /* Limit max height */
     background: #2c3e50;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -67,10 +69,10 @@ video {
     align-items: center;
     max-height: 400px; /* Set maximum height */
     overflow-y: auto; /* Allow vertical scrolling */
-    width: 90%; /* Width of button container */
+    width: 100%; /* Full width of button container */
     background: rgba(255, 255, 255, 0.7); /* More transparent background */
     border-radius: 10px; /* Rounded corners */
-    padding: 20px; /* Padding inside the button container */
+    padding: 10px; /* Padding inside the button container */
 }
 
 .button-row {
@@ -84,12 +86,12 @@ button {
     background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     border: none;
-    padding: 12px 20px;
+    padding: 10px 0; /* Adjusted padding for better fitting */
     border-radius: 8px;
     cursor: pointer;
     margin: 0 5px;
     flex: 1; /* Allow buttons to grow */
-    font-size: 16px;
+    font-size: 14px; /* Adjusted font size */
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5);
 }
@@ -106,8 +108,8 @@ button:not(:disabled):hover {
 }
 
 input {
-    width: calc(80% - 22px);
-    padding: 12px;
+    width: calc(90% - 22px); /* Full width with padding adjustment */
+    padding: 10px;
     margin: 10px 0;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -121,8 +123,8 @@ input:focus {
 
 .hangup-button {
     background-color: #e74c3c;
-    width: 80%;
-    margin-top: 20px;
+    width: 90%; /* Full width */
+    margin-top: 10px;
 }
 
 .hangup-button:hover {
