@@ -207,11 +207,21 @@ hangupButton.onclick = async () => {
   webcamVideo.srcObject = null; // Clear local video
   remoteVideo.srcObject = null; // Clear remote video
 
-  // Redirect both users
-  window.location.href = 'https://sihtesting.netlify.app'; // Redirect both to the specified URL
+  // Set hangup flag in Realtime Database
+  await realtimeDatabase.ref(`calls/${callId}`).update({ hangup: true });
 
-  // Close the popup for the user who pressed hangup
-  setTimeout(() => {
-    window.close(); // Close the popup after redirect
-  }, 1000); // Adjust time if needed
+  // Redirect for the user who pressed hangup
+  window.location.href = 'https://sihtesting.netlify.app'; // Redirect this user
 };
+
+// When answering the call, listen for the hangup flag
+const callId = callInput.value; // Assuming this is set earlier
+const callRef = realtimeDatabase.ref(`calls/${callId}`);
+
+callRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  if (data && data.hangup) {
+    // Redirect to the specified URL if hangup is detected
+    window.location.href = 'https://sihtesting.netlify.app';
+  }
+});
