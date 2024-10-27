@@ -13,9 +13,11 @@ const firebaseConfig = {
   messagingSenderId: "309006701748",
   appId: "1:309006701748:web:2cfa73093e14fbcc2af3e1"
 };
+
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
+
 const firestore = firebase.firestore();
 const realtimeDatabase = firebase.database();
 
@@ -32,6 +34,7 @@ const servers = {
 const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
+let participantCount = 0; // Keep track of participant count
 
 // HTML elements
 const webcamButton = document.getElementById('webcamButton');
@@ -110,6 +113,7 @@ callButton.onclick = async () => {
     offer,
     participantCount: 1,
   });
+  participantCount = 1; // Set participant count to 1 for the caller
 
   callDoc.onSnapshot((snapshot) => {
     const data = snapshot.data();
@@ -163,6 +167,7 @@ answerButton.onclick = async () => {
   await callRef.update({
     participantCount: 2,
   });
+  participantCount = 2; // Set participant count to 2 for the answerer
 
   offerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
@@ -199,4 +204,11 @@ hangupButton.onclick = async () => {
   webcamButton.disabled = false; // Re-enable the webcam button for new calls
   webcamVideo.srcObject = null; // Clear local video
   remoteVideo.srcObject = null; // Clear remote video
+
+  // Check if the user is the caller and redirect the other participant
+  if (participantCount === 1) { // Caller is hanging up
+      window.open('https://doctortestinglil.netlify.app', '_self'); // Redirect to the specified URL
+  } else {
+      window.close(); // Close the popup for the answerer
+  }
 };
