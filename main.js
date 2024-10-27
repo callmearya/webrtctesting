@@ -88,12 +88,12 @@ webcamButton.onclick = async () => {
 };
 
 // Function to monitor room deletion and redirect
-const monitorRoomDeletion = async (callId) => {
+const monitorRoomDeletion = async (callId, isPopupOpen) => {
   const callRef = realtimeDatabase.ref(`calls/${callId}`);
 
   callRef.on('value', (snapshot) => {
-    if (!snapshot.exists()) {
-      // Room has been deleted; redirect the user
+    if (!snapshot.exists() && isPopupOpen) {
+      // Room has been deleted and popup is open; redirect the user
       window.location.href = "https://sihtesting.netlify.app";
     }
   });
@@ -146,7 +146,7 @@ callButton.onclick = async () => {
   });
 
   // Start monitoring room deletion
-  monitorRoomDeletion(callDoc.id);
+  monitorRoomDeletion(callDoc.id, false); // Pass false as the popup is not open yet
 
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
@@ -175,8 +175,6 @@ answerButton.onclick = async () => {
   const answer = {
     type: answerDescription.type,
     sdp: answerDescription.sdp,
-   // Open the popup window with the call URL
-    
   };
 
   await callDoc.update({ answer });
@@ -197,12 +195,13 @@ answerButton.onclick = async () => {
     hangupButton.disabled = false; // Enable hangup for the answerer
   });
 
-  // Start monitoring room deletion
-  monitorRoomDeletion(callId);
-
-    const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
+  // Open the popup window with the call URL
+  const targetUrl = `https://sihtesting.netlify.app?roomCode=${callDoc.id}`;
   const popupFeatures = "width=800,height=700,toolbar=no,location=no,menubar=no,resizable=no,scrollbars=no,status=no";
   popupWindow = window.open(targetUrl, 'RoomPopup', popupFeatures); // Store reference to the popup
+
+  // Start monitoring room deletion with popup open flag
+  monitorRoomDeletion(callId, true);
 };
 
 // 4. Hangup the call
