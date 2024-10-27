@@ -207,10 +207,12 @@ hangupButton.onclick = async () => {
   webcamVideo.srcObject = null; // Clear local video
   remoteVideo.srcObject = null; // Clear remote video
 
-  // Redirect logic based on who is hanging up
+  // Redirect both users
+  window.location.href = 'https://sihtesting.netlify.app'; // Redirect both to the specified URL
+
+  // Close the popup for the user who pressed hangup
   if (isCaller) {
-      window.open('https://google.com', '_self'); // Redirect the caller to google.com
-  } else {
-      window.close(); // Close the popup for the answerer
+      // If caller pressed hangup, close the popup (only if the environment supports this)
+      window.close(); 
   }
 };
