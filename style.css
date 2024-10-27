@@ -125,3 +125,9 @@ input:focus {
 .hangup-button:hover {
     background-color: #c0392b; /* Darker red on hover */
 }
+.button-row {
+    display: flex;
+    justify-content: space-between; /* Distribute buttons evenly */
+    width: 100%; /* Full width of container */
+    margin-bottom: 10px; /* Space between rows */
+}
