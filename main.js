@@ -57,6 +57,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// Disable the call button based on input value
+callInput.addEventListener('input', () => {
+  callButton.disabled = callInput.value.trim() !== ''; // Grey out if there's text
+});
+
 // 1. Setup media sources
 webcamButton.onclick = async () => {
   try {
@@ -137,7 +142,7 @@ callButton.onclick = async () => {
   hangupButton.disabled = true; // Disable hangup for the caller
   answerButton.disabled = true;
   callInput.disabled = true;
-  callButton.disabled=true;
+  callButton.disabled = true; // Disable the call button
 };
 
 // 3. Answer the call with the unique ID
