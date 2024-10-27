@@ -1,43 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebRTC Demo</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- Initial "Start Webcam" button -->
-    <div id="startPage">
-      <button id="webcamButton" class="start-button">Start Webcam</button>
-    </div>
-
-    <!-- Main content to be shown after clicking "Start Webcam" -->
-    <div id="mainPage" class="hidden">
-      <h2>1. Start your Webcam</h2>
+<head>
+  <meta charset="UTF-8">
+  <title>WebRTC Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    body {
+      font-family: 'Syne Mono', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+      color: #2c3e50;
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+      background: #ecf0f1;
+      border-radius: 8px;
+      box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    .hidden {
+      display: none;
+    }
+    .videos {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    video {
+      width: 40vw;
+      height: 30vw;
+      background-color: #2c3e50;
+      border: 2px solid #3498db;
+      border-radius: 12px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    button {
+      background-color: #3498db;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button id="webcamButton">Start Webcam</button>
+    <div id="mainContent" class="hidden">
+      <h2>WebRTC Demo</h2>
       <div class="videos">
-        <span>
+        <div>
           <h3>Local Stream</h3>
           <video id="webcamVideo" autoplay playsinline muted></video>
-        </span>
-        <span>
+        </div>
+        <div>
           <h3>Remote Stream</h3>
           <video id="remoteVideo" autoplay playsinline></video>
-        </span>
+        </div>
       </div>
-
-      <button id="callButton" disabled>Create Call (offer)</button>
-
-      <h2>3. Join a Call</h2>
-      <p>Answer the call from a different browser window or device</p>
-      <input id="callInput" type="text" placeholder="Enter room code" />
+      <input id="callInput" type="text" placeholder="Enter room code">
+      <button id="callButton" disabled>Create Call</button>
       <button id="answerButton" disabled>Answer</button>
-
-      <h2>4. Hangup</h2>
       <button id="hangupButton" disabled>Hangup</button>
     </div>
-
     <script type="module" src="main.js"></script>
-  </body>
+  </div>
+</body>
 </html>
